@@ -13,8 +13,12 @@ M.options = {
 -- Runs ./Makefile in the current working directory.
 function M.run_makefile()
   -- If no makefile, show a warning notification and return.
-  local stat = vim.loop.fs_stat("./Makefile")
-  if not stat then
+  local utils = require("compiler.utils")
+  local overseer = require("overseer")
+  local cwd = vim.fn.getcwd()
+  local makefile_path = vim.loop.fs_stat(cwd .. "/Makefile") and (cwd .. "/Makefile")
+    or (vim.loop.fs_stat(cwd .. "/makefile") and (cwd .. "/makefile"))
+  if not makefile_path then
     vim.notify("You must have a Makefile in your working directory", vim.log.levels.WARN, {
       title = "Compiler.nvim"
     })
@@ -22,9 +26,7 @@ function M.run_makefile()
   end
 
   -- Run makefile
-  local utils = require("compiler.utils")
-  local overseer = require("overseer")
-  local makefile = utils.os_path(vim.fn.getcwd() .. "/Makefile", true)
+  local makefile = utils.os_path(makefile_path, true)
   local final_message = "--task finished--"
   local task = overseer.new_task({
     name = "- Make interpreter",

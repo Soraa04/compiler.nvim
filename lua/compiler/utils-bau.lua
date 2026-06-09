@@ -302,13 +302,15 @@ end
 --- the options of all bau available in the current working directory.
 --- Empty table {} if none is found.
 function M.get_bau_opts()
-  local working_dir = vim.fn.getcwd()
+  local working_dir = vim.fn.getcwd(-1, -1)
   local options = {}
 
   -- make
-  vim.list_extend(options, get_makefile_opts(
-    working_dir .. utils.os_path("/Makefile")
-  ))
+  local makefile = working_dir .. utils.os_path("/Makefile")
+  if vim.fn.filereadable(makefile) == 0 then
+    makefile = working_dir .. utils.os_path("/makefile")
+  end
+  vim.list_extend(options, get_makefile_opts(makefile))
 
   -- cmake
   vim.list_extend(options, get_cmake_opts(
